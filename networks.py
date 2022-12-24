@@ -39,7 +39,7 @@ class MsImageDis(nn.Module):
         for i in range(self.n_layer - 1):
             cnn_x += [Conv2dBlock(dim, dim * 2, 4, 2, 1, norm=self.norm, activation=self.activ, pad_type=self.pad_type)]
             dim *= 2
-        cnn_x += [nn.Conv2d(dim, 1, 1, 1, 0)]
+        cnn_x += [nn.Conv2d(dim, 1, 1, 1, 0, dtype=torch.float16)]
         cnn_x = nn.Sequential(*cnn_x)
         return cnn_x
 
@@ -196,7 +196,7 @@ class StyleEncoder(nn.Module):
         for i in range(n_downsample - 2):
             self.model += [Conv2dBlock(dim, dim, 4, 2, 1, norm=norm, activation=activ, pad_type=pad_type)]
         self.model += [nn.AdaptiveAvgPool2d(1)] # global average pooling
-        self.model += [nn.Conv2d(dim, style_dim, 1, 1, 0)]
+        self.model += [nn.Conv2d(dim, style_dim, 1, 1, 0, dtype=torch.float16)]
         self.model = nn.Sequential(*self.model)
         self.output_dim = dim
 
@@ -333,7 +333,7 @@ class Conv2dBlock(nn.Module):
             assert 0, "Unsupported activation: {}".format(activation)
 
         # initialize convolution
-        self.conv = nn.Conv2d(input_dim, output_dim, kernel_size, stride, bias=self.use_bias)
+        self.conv = nn.Conv2d(input_dim, output_dim, kernel_size, stride, bias=self.use_bias, dtype=torch.float16)
 
     def forward(self, x):
         x = self.conv(self.pad(x))
@@ -393,23 +393,23 @@ class LinearBlock(nn.Module):
 class Vgg16(nn.Module):
     def __init__(self):
         super(Vgg16, self).__init__()
-        self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1)
-        self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1)
+        self.conv1_1 = nn.Conv2d(3, 64, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv1_2 = nn.Conv2d(64, 64, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
 
-        self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1)
-        self.conv2_2 = nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1)
+        self.conv2_1 = nn.Conv2d(64, 128, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv2_2 = nn.Conv2d(128, 128, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
 
-        self.conv3_1 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1)
-        self.conv3_2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
-        self.conv3_3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1)
+        self.conv3_1 = nn.Conv2d(128, 256, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv3_2 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv3_3 = nn.Conv2d(256, 256, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
 
-        self.conv4_1 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1)
-        self.conv4_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.conv4_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
+        self.conv4_1 = nn.Conv2d(256, 512, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv4_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv4_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
 
-        self.conv5_1 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.conv5_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
-        self.conv5_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1)
+        self.conv5_1 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv5_2 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
+        self.conv5_3 = nn.Conv2d(512, 512, kernel_size=3, stride=1, padding=1, dtype=torch.float16)
 
     def forward(self, X):
         h = F.relu(self.conv1_1(X), inplace=True)
